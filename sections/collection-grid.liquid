@@ -1,3 +1,20 @@
+{% assign selected_collection = collections[section.settings.collection_handle] %}
+{% assign products_to_display = selected_collection.products %}
+{% if section.settings.collection_handle == blank %}
+  {% assign products_to_display = collections['all'].products %}
+{% endif %}
+{% assign products_count = products_to_display.size %}
+{% if products_count > section.settings.products_per_page %}
+  {% assign products_count = section.settings.products_per_page %}
+{% endif %}
+{% assign grid_columns = section.settings.columns %}
+{% if products_count > 0 and products_count < grid_columns %}
+  {% assign grid_columns = products_count %}
+{% endif %}
+{% assign grid_columns_mobile = section.settings.columns-mobile %}
+{% if products_count > 0 and products_count < grid_columns_mobile %}
+  {% assign grid_columns_mobile = products_count %}
+{% endif %}
 <style>
   .section-{{ section.id }}-padding {
     margin-top: {{ section.settings.margin-top }}px;
@@ -18,7 +35,7 @@
   .product-grid {
     display: grid;
     width: 100%;
-    grid-template-columns: repeat({{ section.settings.columns }}, 1fr);
+    grid-template-columns: repeat({{ grid_columns }}, 1fr);
     gap: 0;
   }
   .product-grid__item {
@@ -88,7 +105,7 @@
       {% endif %}
     }
     .product-grid {
-      grid-template-columns: repeat({{ section.settings.columns-mobile }}, 1fr);
+      grid-template-columns: repeat({{ grid_columns_mobile }}, 1fr);
     }
     .product-grid__item--2,
     .product-grid__item--3 {
@@ -104,13 +121,6 @@
     </div>
   {% endif %}
   <div class="product-grid">
-    {% assign selected_collection = collections[section.settings.collection_handle] %}
-    {% assign products_to_display = selected_collection.products %}
-
-    {% if section.settings.collection_handle == blank %}
-      {% assign products_to_display = collections['all'].products %}
-    {% endif %}
-
     {% for product in products_to_display limit: section.settings.products_per_page %}
       {% assign tile_size = 1 %}
       {% if section.settings.large-every > 0 %}
