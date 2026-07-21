@@ -181,9 +181,26 @@
     <div class="ai-product-grid-items-{{ ai_gen_id }}">
       {% if block.settings.collection != blank %}
         {% assign products_to_show = block.settings.products_limit %}
+
+        {% assign doodle_active_count = 0 %}
+        {% if block.settings.enable_doodles %}
+          {% if block.settings.doodle_1 != blank %}{% assign doodle_active_count = doodle_active_count | plus: 1 %}{% endif %}
+          {% if block.settings.doodle_2 != blank %}{% assign doodle_active_count = doodle_active_count | plus: 1 %}{% endif %}
+          {% if block.settings.doodle_3 != blank %}{% assign doodle_active_count = doodle_active_count | plus: 1 %}{% endif %}
+          {% if block.settings.doodle_4 != blank %}{% assign doodle_active_count = doodle_active_count | plus: 1 %}{% endif %}
+          {% if block.settings.doodle_5 != blank %}{% assign doodle_active_count = doodle_active_count | plus: 1 %}{% endif %}
+          {% if block.settings.doodle_6 != blank %}{% assign doodle_active_count = doodle_active_count | plus: 1 %}{% endif %}
+        {% endif %}
+        {% comment %} Global counter shared across every product/corner so the
+          doodle picks form one continuous round-robin cycle through every
+          uploaded doodle -- guarantees each uploaded doodle appears at
+          least twice as long as there are at least 2x as many rendered
+          corners as uploaded doodles. {% endcomment %}
+        {% assign global_slot = 0 %}
+
         {% for product in block.settings.collection.products limit: products_to_show %}
           <div class="ai-product-grid-item-{{ ai_gen_id }}">
-            {% if block.settings.enable_doodles %}
+            {% if block.settings.enable_doodles and doodle_active_count > 0 %}
               {% assign total_count = 3 %}
               {% assign count_parity = product.id | modulo: 2 %}
               {% if count_parity == 1 %}
@@ -200,21 +217,33 @@
                 {% if corner_index != skip_corner %}
                   {% assign hash_seed = product.id | plus: corner_index | times: 9 %}
 
-                  {% assign doodle_pick = hash_seed | modulo: 6 %}
-                  {% case doodle_pick %}
-                    {% when 0 %}
-                      {% assign doodle_img = block.settings.doodle_1 %}
-                    {% when 1 %}
-                      {% assign doodle_img = block.settings.doodle_2 %}
-                    {% when 2 %}
-                      {% assign doodle_img = block.settings.doodle_3 %}
-                    {% when 3 %}
-                      {% assign doodle_img = block.settings.doodle_4 %}
-                    {% when 4 %}
-                      {% assign doodle_img = block.settings.doodle_5 %}
-                    {% when 5 %}
-                      {% assign doodle_img = block.settings.doodle_6 %}
-                  {% endcase %}
+                  {% assign active_pick = global_slot | modulo: doodle_active_count %}
+                  {% assign global_slot = global_slot | plus: 1 %}
+                  {% assign doodle_img = blank %}
+                  {% assign active_seen = -1 %}
+                  {% for n in (1..6) %}
+                    {% case n %}
+                      {% when 1 %}
+                        {% assign candidate = block.settings.doodle_1 %}
+                      {% when 2 %}
+                        {% assign candidate = block.settings.doodle_2 %}
+                      {% when 3 %}
+                        {% assign candidate = block.settings.doodle_3 %}
+                      {% when 4 %}
+                        {% assign candidate = block.settings.doodle_4 %}
+                      {% when 5 %}
+                        {% assign candidate = block.settings.doodle_5 %}
+                      {% when 6 %}
+                        {% assign candidate = block.settings.doodle_6 %}
+                    {% endcase %}
+                    {% if candidate != blank %}
+                      {% assign active_seen = active_seen | plus: 1 %}
+                      {% if active_seen == active_pick %}
+                        {% assign doodle_img = candidate %}
+                        {% break %}
+                      {% endif %}
+                    {% endif %}
+                  {% endfor %}
 
                   {% if doodle_img != blank %}
                     {% assign base_rotation = -15 %}
