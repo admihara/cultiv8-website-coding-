@@ -1,0 +1,312 @@
+<style>
+  .section-{{ section.id }}-padding {
+    margin-top: {{ section.settings.margin-top }}px;
+    margin-bottom: {{ section.settings.margin-bottom }}px;
+  }
+  .f-collection-title{
+    padding-bottom: 15px;
+    {% if section.settings.font-size == 's' %}
+    font-size: 16px;
+    {% elsif section.settings.font-size == 'm' %}
+    font-size: 24px;
+    {% elsif section.settings.font-size == 'l' %}
+    font-size: 32px;
+    {% elsif section.settings.font-size == 'xl' %}
+    font-size: 44px;
+    {% endif %}
+  }
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns }}, 1fr);
+    gap: 0;
+  }
+  .product-grid__item {
+    position: relative;
+    display: block;
+    overflow: hidden;
+  }
+  .product-grid__item--1 {
+    grid-column: span 1;
+    aspect-ratio: 1 / 1;
+  }
+  .product-grid__item--2 {
+    grid-column: span 2;
+    aspect-ratio: 2 / 1;
+  }
+  .product-grid__item--3 {
+    grid-column: span 3;
+    aspect-ratio: 3 / 1;
+  }
+  .product-grid__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .product-grid__scrim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 45%;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.35), transparent);
+    pointer-events: none;
+  }
+  .product-grid__info {
+    position: absolute;
+    left: {{ section.settings.info-padding }}px;
+    bottom: {{ section.settings.info-padding }}px;
+    right: {{ section.settings.info-padding }}px;
+    color: {{ section.settings.info-color }};
+    font-size: {{ section.settings.info-size }}px;
+    line-height: 1.35;
+    pointer-events: none;
+  }
+  .product-grid__name {
+    display: block;
+    text-transform: uppercase;
+  }
+  .product-grid__price {
+    display: block;
+    opacity: 0.85;
+  }
+  .product-grid__price strike {
+    margin-left: 6px;
+    opacity: 0.7;
+  }
+  @media screen and (max-width: 749px){
+    .f-collection-title{
+      {% if section.settings.font-size == 's' %}
+      font-size: 16px;
+      {% elsif section.settings.font-size == 'm' %}
+      font-size: 20px;
+      {% elsif section.settings.font-size == 'l' %}
+      font-size: 24px;
+      {% elsif section.settings.font-size == 'xl' %}
+      font-size: 28px;
+      {% endif %}
+    }
+    .product-grid {
+      grid-template-columns: repeat({{ section.settings.columns-mobile }}, 1fr);
+    }
+    .product-grid__item--2,
+    .product-grid__item--3 {
+      grid-column: span 1;
+      aspect-ratio: 1 / 1;
+    }
+  }
+</style>
+<div class="page-width featured-collection section-{{ section.id }}-padding ">
+  {% if section.settings.collection-title != blank %}
+    <h2 class="f-collection-title">{{ section.settings.collection-title }}</h2>
+  {% endif %}
+  <div class="product-grid">
+    {% assign selected_collection = collections[section.settings.collection_handle] %}
+    {% assign products_to_display = selected_collection.products %}
+
+    {% if section.settings.collection_handle == blank %}
+      {% assign products_to_display = collections['all'].products %}
+    {% endif %}
+
+    {% for product in products_to_display limit: section.settings.products_per_page %}
+      {% assign tile_size = 1 %}
+      {% if section.settings.large-every > 0 %}
+        {% assign large_remainder = forloop.index | modulo: section.settings.large-every %}
+        {% if large_remainder == 0 %}
+          {% assign tile_size = section.settings.large-size %}
+        {% endif %}
+      {% endif %}
+      <a href="{{ product.url }}" class="product-grid__item product-grid__item--{{ tile_size }} fade-in">
+        <img class="product-grid__img" src="{{ product | img_url: 'master' }}" alt="{{ product.title | escape }}" loading="lazy" onload="this.closest('.product-grid__item').classList.add('loaded')">
+        {% if section.settings.show-scrim %}
+          <span class="product-grid__scrim"></span>
+        {% endif %}
+        <span class="product-grid__info">
+          <span class="product-grid__name">{{ product.title }}</span>
+          {% if product.compare_at_price > product.price and product.compare_at_price > 0 %}
+            <span class="product-grid__price">{{ product.price | money_with_currency }}<strike>{{ product.compare_at_price | money_with_currency }}</strike></span>
+          {% else %}
+            {% assign available = false %}
+            {% for variant in product.variants %}
+              {% if variant.inventory_management == nil or variant.inventory_policy == 'continue' %}
+                {% assign available = true %}
+                {% break %}
+              {% elsif variant.inventory_quantity > 0 %}
+                {% assign available = true %}
+                {% break %}
+              {% endif %}
+            {% endfor %}
+            {% if available %}
+              <span class="product-grid__price">{{ product.price | money_with_currency }}</span>
+            {% else %}
+              <span class="product-grid__price">{{ product.price | money_with_currency }} — Sold Out</span>
+            {% endif %}
+          {% endif %}
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Collection grid",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection_handle",
+      "label": "Select a collection",
+      "info": "Do not select a collection if you want to display all products"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products to show",
+      "min": 1,
+      "max": 100,
+      "default": 10,
+      "step": 1
+    },
+    {
+      "type": "text",
+      "id": "collection-title",
+      "label": "Title",
+      "default": "COLLECTION NAME"
+    },
+    {
+      "type": "select",
+      "id": "font-size",
+      "label": "Title text size",
+      "options": [
+        {
+          "label": "S",
+          "value": "s"
+        },
+        {
+          "label": "M",
+          "value": "m"
+        },
+        {
+          "label": "L",
+          "value": "l"
+        },
+        {
+          "label": "XL",
+          "value": "xl"
+        }
+      ],
+      "default": "m"
+    },
+    {
+      "type": "header",
+      "content": "Grid"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 6,
+      "default": 4,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "columns-mobile",
+      "label": "Columns (mobile)",
+      "min": 1,
+      "max": 3,
+      "default": 2,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "large-every",
+      "label": "Make every Nth image larger",
+      "info": "0 keeps every image the same size. Desktop only — mobile always shows uniform squares.",
+      "min": 0,
+      "max": 10,
+      "default": 0,
+      "step": 1
+    },
+    {
+      "type": "select",
+      "id": "large-size",
+      "label": "Larger image width",
+      "options": [
+        {
+          "label": "2 columns wide",
+          "value": "2"
+        },
+        {
+          "label": "3 columns wide",
+          "value": "3"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "header",
+      "content": "Product info"
+    },
+    {
+      "type": "color",
+      "id": "info-color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "info-size",
+      "label": "Text size",
+      "min": 8,
+      "max": 24,
+      "default": 12,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "info-padding",
+      "label": "Corner padding",
+      "min": 4,
+      "max": 40,
+      "default": 14,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "show-scrim",
+      "label": "Darken image bottom for legibility",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "margin-top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 70,
+      "default": 30,
+      "step": 1
+    },
+    {
+      "type": "range",
+      "id": "margin-bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 70,
+      "default": 15,
+      "step": 1
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection grid"
+    }
+  ]
+}
+{% endschema %}
