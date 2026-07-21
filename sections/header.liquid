@@ -1,0 +1,391 @@
+<style>
+  .header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .header-menu,
+  .right-nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 1 1 0;
+    gap: {{ section.settings.link-spacing }}px;
+  }
+  .header-menu {
+    justify-content: flex-end;
+  }
+  .right-nav {
+    justify-content: flex-start;
+  }
+  .logo-wrapper {
+    flex: 0 0 auto;
+    padding: 20px {{ section.settings.link-spacing }}px;
+    margin: 0 auto;
+  }
+  .logo-wrapper img {
+    width: {{ section.settings.logo-size }}px;
+    max-width: 100%;
+  }
+  .header-menu .menu-item > a,
+  .right-nav a {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 400;
+    font-size: {{ section.settings.nav-text-size }}px;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .submenu {
+    display: none;
+    position: absolute;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+    background: {{ settings.submenu-bg }};
+    z-index: 100;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 10px;
+    flex-direction: column;
+    padding: 0;
+    min-width: 150px;
+  }
+  .subsub-menu-item {
+    padding-top: 0 !important;
+    font-size: 0.8em;
+  }
+  .submenu a {
+    padding: 10px;
+    display: block;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .has-children {
+    position: relative;
+  }
+  .has-children > a:after {
+    content: ' +';
+  }
+  .has-children.active > a:after {
+    content: ' -';
+  }
+
+  @media screen and (min-width: 750px){
+    .submenu a {
+      color: {{ settings.submenu-color }};
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .header-wrapper {
+      column-gap: 8px;
+    }
+    .header-menu,
+    .right-nav {
+      gap: {{ section.settings.link-spacing-mobile }}px;
+    }
+    .logo-wrapper {
+      padding: 14px {{ section.settings.link-spacing-mobile }}px;
+    }
+    .logo-wrapper img {
+      width: {{ section.settings.logo-size-mobile }}px;
+    }
+    .header-menu .menu-item > a,
+    .right-nav a {
+      font-size: {{ section.settings.nav-text-size-mobile }}px;
+    }
+  }
+
+  .announcement-container{
+    background: {{ section.settings.announcement-background }};
+    padding: 8px 0px;
+  }
+  .announcement-content{
+    color: {{ section.settings.announcement-color }};
+    text-align: center;
+    font-size: {{ section.settings.an_text_size_pc }}px;
+    {% if section.settings.announcement_text_style == 'heading' %}
+    font-family: var(--font-heading-family) !important;
+    font-style: var(--font-heading-style) !important;
+    font-weight: var(--font-heading-weight) !important;
+    {% elsif section.settings.announcement_text_style == 'body' %}
+    font-family: var(--font-body-family) !important;
+    font-style: var(--font-body-style) !important;
+    font-weight: var(--font-body-weight) !important;
+    {% endif %}
+  }
+  {% unless section.settings.announcement_link %}
+  .announcement-link{
+    pointer-events: none;
+    cursor: none;
+  }
+  {% endunless %}
+  @media screen and (max-width: 749px) {
+    .announcement-content{
+      font-size: {{ section.settings.an_text_size_mobile }}px !important;
+    }
+  }
+</style>
+{% if section.settings.enable_announcement %}
+<a class="announcement-link" href="{{ section.settings.announcement_link }}">
+  <div class="announcement-container">
+    <div class="announcement-content">{{ section.settings.announcement_text }}</div>
+  </div>
+</a>
+{% endif %}
+<div class="page-width">
+<div class="header-wrapper">
+
+  <div class="header-menu">
+    {% if section.settings.menu %}
+      {% for link in linklists[section.settings.menu].links %}
+      <div class="menu-item{% if link.links.size > 0 %} has-children{% endif %}">
+        <a href="{{ link.url }}" class="menu-link">{{ link.title }}</a>
+        {% if link.links.size > 0 %}
+          <div class="submenu">
+            {% for childlink in link.links %}
+              <a href="{{ childlink.url }}">{{ childlink.title }}</a>
+              {% if childlink.links.size > 0 %}
+                {% for subchildlink in childlink.links %}
+                  <span>
+                    <a class="subsub-menu-item" href="{{ subchildlink.url }}">{{ subchildlink.title }}</a>
+                  </span>
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <div class="logo-wrapper">
+    <a href="{{ routes.root_url }}" class="header__heading-link">
+      {% if settings.enable-header-overlay and template == 'index' %}
+        {%- if settings.header-overlay-logo != blank -%}
+          <img class="header-logo" src="{{ settings.header-overlay-logo | img_url: 'master' }}" alt="{{ shop.name }}" loading="eager">
+        {%- else -%}
+          <span class="header-logo-text">{{ shop.name }}</span>
+        {%- endif -%}
+      {% else %}
+        {%- if section.settings.logo != blank -%}
+          <img class="header-logo" src="{{ section.settings.logo | img_url: 'master' }}" alt="{{ shop.name }}" loading="eager">
+        {%- else -%}
+          <span class="header-logo-text">{{ shop.name }}</span>
+        {%- endif -%}
+      {% endif %}
+    </a>
+  </div>
+
+  <div class="right-nav">
+    {% if shop.customer_accounts_enabled %}
+      <a href="/account">Account</a>
+    {% endif %}
+    {% if section.settings.track_link != blank %}
+      <a href="{{ section.settings.track_link }}">Track</a>
+    {% endif %}
+    <a href="/cart">Cart (<span id="CartCount">{{ cart.item_count }}</span>)</a>
+  </div>
+
+</div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var menuItems = document.querySelectorAll('.header-menu > .menu-item');
+  menuItems.forEach(function(item) {
+    var link = item.querySelector('.menu-link');
+    link.addEventListener('click', function(event) {
+      if(item.classList.contains('has-children')){
+        event.preventDefault();
+        var active = document.querySelector('.menu-item.active');
+        if(active && active !== item){
+          active.classList.remove('active');
+          active.querySelector('.submenu').style.display = 'none';
+        }
+        var submenu = item.querySelector('.submenu');
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        item.classList.toggle('active');
+      }
+    });
+  });
+
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.menu-item')) {
+      var submenus = document.querySelectorAll('.submenu');
+      submenus.forEach(function(submenu) {
+        submenu.style.display = 'none';
+      });
+      var activeItems = document.querySelectorAll('.menu-item.active');
+      activeItems.forEach(function(item) {
+        item.classList.remove('active');
+      });
+    }
+  });
+});
+</script>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo",
+      "info": "To enable/disable header overlay (for image banner) go to Theme Settings => Header overlay"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo"
+    },
+    {
+      "type": "range",
+      "id": "logo-size",
+      "min": 50,
+      "max": 400,
+      "step": 5,
+      "default": 150,
+      "unit": "px",
+      "label": "Logo size (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "logo-size-mobile",
+      "min": 50,
+      "max": 300,
+      "step": 5,
+      "default": 100,
+      "unit": "px",
+      "label": "Logo size (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Navigation links"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Header menu",
+      "info": "Links shown to the left of the logo, e.g. Shop, About, Roots"
+    },
+    {
+      "type": "url",
+      "id": "track_link",
+      "label": "Track order link",
+      "info": "Shown to the right of the logo, after Account and before Cart. Leave blank to hide."
+    },
+    {
+      "type": "range",
+      "id": "nav-text-size",
+      "min": 10,
+      "max": 30,
+      "step": 1,
+      "default": 16,
+      "unit": "px",
+      "label": "Link text size (desktop)",
+      "info": "Applies uniformly to all links on both sides of the logo"
+    },
+    {
+      "type": "range",
+      "id": "nav-text-size-mobile",
+      "min": 8,
+      "max": 24,
+      "step": 1,
+      "default": 12,
+      "unit": "px",
+      "label": "Link text size (mobile)",
+      "info": "Applies uniformly to all links on both sides of the logo"
+    },
+    {
+      "type": "range",
+      "id": "link-spacing",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "default": 24,
+      "unit": "px",
+      "label": "Space between links (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "link-spacing-mobile",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 10,
+      "unit": "px",
+      "label": "Space between links (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Announcement"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_announcement",
+      "label": "Enable announcement",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "announcement_text",
+      "label": "Announcement",
+      "default": "Announce something here"
+    },
+    {
+      "type": "color",
+      "id": "announcement-background",
+      "label": "Announcement background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "announcement-color",
+      "label": "Announcement text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "url",
+      "id": "announcement_link",
+      "label": "Link (optional)"
+    },
+    {
+      "type": "select",
+      "id": "announcement_text_style",
+      "label": "Text style",
+      "options": [
+        {
+          "value": "heading",
+          "label": "Heading"
+        },
+        {
+          "value": "body",
+          "label": "Body"
+        }
+      ],
+      "default": "heading"
+    },
+    {
+      "type": "range",
+      "id": "an_text_size_pc",
+      "label": "Text size (PC view)",
+      "min": 10,
+      "max": 28,
+      "step": 1,
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "an_text_size_mobile",
+      "label": "Text size (Mobile view)",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "default": 14
+    }
+  ]
+}
+{% endschema %}
