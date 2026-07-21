@@ -119,8 +119,14 @@
           {% assign tile_size = section.settings.large-size %}
         {% endif %}
       {% endif %}
+      {% assign grid_image_url = product | img_url: 'master' %}
+      {% for block in section.blocks %}
+        {% if block.type == 'image_override' and block.settings.product.id == product.id and block.settings.image != blank %}
+          {% assign grid_image_url = block.settings.image | img_url: 'master' %}
+        {% endif %}
+      {% endfor %}
       <a href="{{ product.url }}" class="product-grid__item product-grid__item--{{ tile_size }} fade-in">
-        <img class="product-grid__img" src="{{ product | img_url: 'master' }}" alt="{{ product.title | escape }}" loading="lazy" onload="this.closest('.product-grid__item').classList.add('loaded')">
+        <img class="product-grid__img" src="{{ grid_image_url }}" alt="{{ product.title | escape }}" loading="lazy" onload="this.closest('.product-grid__item').classList.add('loaded')">
         {% if section.settings.show-scrim %}
           <span class="product-grid__scrim"></span>
         {% endif %}
@@ -304,6 +310,25 @@
       "max": 70,
       "default": 15,
       "step": 1
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image_override",
+      "name": "Image override",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Grid image",
+          "info": "Shown in this grid instead of the product's front image. Leave blank to use the product's own image."
+        }
+      ]
     }
   ],
   "presets": [
