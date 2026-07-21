@@ -129,7 +129,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: {{ section.settings.compact-spacing }}px;
+    padding: {{ section.settings.compact-padding-y }}px {{ section.settings.compact-padding-x }}px;
   }
   .compact-logo-wrapper {
     position: absolute;
@@ -169,6 +169,11 @@
     width: {{ section.settings.compact-icon-size }}px;
     height: {{ section.settings.compact-icon-size }}px;
     stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    overflow: visible;
   }
   .burger-menu .cross {
     display: none;
@@ -197,7 +202,7 @@
   }
   @media screen and (max-width: 749px) {
     .compact-wrapper {
-      padding: {{ section.settings.compact-spacing-mobile }}px;
+      padding: {{ section.settings.compact-padding-y-mobile }}px {{ section.settings.compact-padding-x-mobile }}px;
     }
     .compact-logo-wrapper img {
       width: {{ section.settings.logo-size-compact-mobile }}px;
@@ -303,8 +308,12 @@
 {% if settings.enable-header-overlay and template == 'index' %}
   {% assign show_hero = true %}
 {% endif %}
+{% assign is_homepage = false %}
+{% if template == 'index' %}
+  {% assign is_homepage = true %}
+{% endif %}
 
-<header class="site-header{% unless show_hero %} past-banner{% endunless %}" data-has-hero="{{ show_hero }}">
+<header class="site-header{% unless show_hero %} past-banner{% endunless %}" data-has-hero="{{ show_hero }}" data-is-homepage="{{ is_homepage }}">
 
   {% if show_hero %}
   <div class="hero-header">
@@ -360,13 +369,14 @@
       <div class="compact-wrapper">
 
         <button class="burger-menu" aria-label="Menu" aria-expanded="false">
-          <svg class="burger" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 51" fill="none">
-            <line x1="8" y1="20" x2="48" y2="20" stroke-width="2"/>
-            <line x1="8" y1="28.6133" x2="48" y2="28.6133" stroke-width="2"/>
+          <svg class="burger" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <line x1="3" y1="7" x2="21" y2="7"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="17" x2="21" y2="17"/>
           </svg>
-          <svg class="cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 41" fill="none">
-            <path d="M13 30.4902L31.4902 12" stroke-width="1.65"/>
-            <path d="M13 12L31.4902 30.4902" stroke-width="1.65"/>
+          <svg class="cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <line x1="5" y1="5" x2="19" y2="19"/>
+            <line x1="19" y1="5" x2="5" y2="19"/>
           </svg>
         </button>
 
@@ -382,10 +392,10 @@
         </a>
 
         <a class="cart-icon-link" href="/cart" aria-label="Cart">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
-            <path d="M6 6h15l-1.5 9h-12L6 6zM6 6L5 3H2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="9.5" cy="20" r="1.5"/>
-            <circle cx="17.5" cy="20" r="1.5"/>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M6 6h15l-1.5 9h-12L6 6zM6 6L5 3H2"/>
+            <circle cx="9.5" cy="20" r="1.5" fill="currentColor" stroke="none"/>
+            <circle cx="17.5" cy="20" r="1.5" fill="currentColor" stroke="none"/>
           </svg>
           {% if cart.item_count > 0 %}
             <span class="cart-count-bubble"><span>{{ cart.item_count }}</span></span>
@@ -434,8 +444,22 @@
 document.addEventListener('DOMContentLoaded', function () {
   var header = document.querySelector('.site-header');
   var banner = document.querySelector('.image-banner-container');
+  var compactHeader = document.querySelector('.compact-header');
+  var isHomepage = header.dataset.isHomepage === 'true';
   var lastScrollY = window.scrollY;
   var revealOffset = 80;
+
+  function updateBodyOffset() {
+    if (isHomepage) {
+      document.body.style.paddingTop = '';
+      return;
+    }
+    document.body.style.paddingTop = compactHeader.offsetHeight + 'px';
+  }
+
+  updateBodyOffset();
+  window.addEventListener('resize', updateBodyOffset);
+  window.addEventListener('load', updateBodyOffset);
 
   function updatePastBanner() {
     if (!banner) {
@@ -657,23 +681,43 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     {
       "type": "range",
-      "id": "compact-spacing",
+      "id": "compact-padding-x",
       "min": 10,
       "max": 100,
       "step": 2,
       "default": 40,
       "unit": "px",
-      "label": "Spacing around icons (desktop)"
+      "label": "Icon padding from page edge (desktop)"
     },
     {
       "type": "range",
-      "id": "compact-spacing-mobile",
+      "id": "compact-padding-x-mobile",
       "min": 10,
       "max": 60,
       "step": 2,
       "default": 20,
       "unit": "px",
-      "label": "Spacing around icons (mobile)"
+      "label": "Icon padding from page edge (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "compact-padding-y",
+      "min": 8,
+      "max": 60,
+      "step": 2,
+      "default": 20,
+      "unit": "px",
+      "label": "Vertical padding / header height (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "compact-padding-y-mobile",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 14,
+      "unit": "px",
+      "label": "Vertical padding / header height (mobile)"
     },
     {
       "type": "header",
