@@ -67,42 +67,35 @@
     pointer-events: none;
     user-select: none;
   }
-  /* Eight fixed, non-overlapping positions ringing the image. Each product
-     randomly uses 3 or 5 of them (see the loop below) starting from a
-     different point in the ring, so both which positions appear and which
-     doodle/angle/size lands in each one vary from product to product,
-     while doodles on the same product never collide. */
-  .ai-product-grid-doodle-slot-0-{{ ai_gen_id }} {
-    top: -10%;
-    left: -10%;
+  /* Three positions down the left edge, three down the right edge -- all
+     kept fully inside the tile's own box (no negative offsets), so a
+     doodle can never bleed into a neighboring product no matter how tight
+     the grid gap is. Each product randomly uses 3 or 4 of these six,
+     always drawing from both sides, starting from a different point on
+     each side so the exact spots/doodle/angle/size vary per product. */
+  .ai-product-grid-doodle-slot-left-0-{{ ai_gen_id }} {
+    top: 4%;
+    left: 4%;
   }
-  .ai-product-grid-doodle-slot-1-{{ ai_gen_id }} {
-    top: -12%;
-    left: 42%;
+  .ai-product-grid-doodle-slot-left-1-{{ ai_gen_id }} {
+    top: 38%;
+    left: 4%;
   }
-  .ai-product-grid-doodle-slot-2-{{ ai_gen_id }} {
-    top: -8%;
-    right: -12%;
-  }
-  .ai-product-grid-doodle-slot-3-{{ ai_gen_id }} {
-    top: 35%;
-    right: -14%;
-  }
-  .ai-product-grid-doodle-slot-4-{{ ai_gen_id }} {
-    bottom: 20%;
-    right: -12%;
-  }
-  .ai-product-grid-doodle-slot-5-{{ ai_gen_id }} {
-    bottom: 22%;
-    left: 42%;
-  }
-  .ai-product-grid-doodle-slot-6-{{ ai_gen_id }} {
+  .ai-product-grid-doodle-slot-left-2-{{ ai_gen_id }} {
     bottom: 18%;
-    left: -10%;
+    left: 4%;
   }
-  .ai-product-grid-doodle-slot-7-{{ ai_gen_id }} {
-    top: 35%;
-    left: -14%;
+  .ai-product-grid-doodle-slot-right-0-{{ ai_gen_id }} {
+    top: 4%;
+    right: 4%;
+  }
+  .ai-product-grid-doodle-slot-right-1-{{ ai_gen_id }} {
+    top: 38%;
+    right: 4%;
+  }
+  .ai-product-grid-doodle-slot-right-2-{{ ai_gen_id }} {
+    bottom: 18%;
+    right: 4%;
   }
 
   .ai-product-grid-image-wrapper-{{ ai_gen_id }} {
@@ -199,17 +192,32 @@
         {% for product in block.settings.collection.products limit: products_to_show %}
           <div class="ai-product-grid-item-{{ ai_gen_id }}">
             {% if block.settings.enable_doodles %}
-              {% assign doodle_count = 3 %}
+              {% assign total_count = 3 %}
               {% assign count_parity = product.id | modulo: 2 %}
               {% if count_parity == 1 %}
-                {% assign doodle_count = 5 %}
+                {% assign total_count = 4 %}
               {% endif %}
-              {% assign slot_start = product.id | modulo: 8 %}
-              {% for slot_offset in (0..7) %}
-                {% if forloop.index0 < doodle_count %}
-                  {% assign slot = slot_start | plus: forloop.index0 | modulo: 8 %}
 
-                  {% assign doodle_pick = product.id | plus: slot | times: 11 | modulo: 6 %}
+              {% assign left_count = 2 %}
+              {% assign right_count = 2 %}
+              {% if total_count == 3 %}
+                {% assign side_parity = product.id | divided_by: 2 | modulo: 2 %}
+                {% if side_parity == 0 %}
+                  {% assign left_count = 2 %}
+                  {% assign right_count = 1 %}
+                {% else %}
+                  {% assign left_count = 1 %}
+                  {% assign right_count = 2 %}
+                {% endif %}
+              {% endif %}
+
+              {% assign left_start = product.id | modulo: 3 %}
+              {% for i in (0..2) %}
+                {% if forloop.index0 < left_count %}
+                  {% assign slot_index = left_start | plus: forloop.index0 | modulo: 3 %}
+                  {% assign hash_seed = product.id | plus: slot_index | times: 9 %}
+
+                  {% assign doodle_pick = hash_seed | modulo: 6 %}
                   {% case doodle_pick %}
                     {% when 0 %}
                       {% assign doodle_img = block.settings.doodle_1 %}
@@ -226,9 +234,9 @@
                   {% endcase %}
 
                   {% if doodle_img != blank %}
-                    {% assign rotation_seed = product.id | plus: slot | times: 13 | modulo: 21 %}
+                    {% assign rotation_seed = hash_seed | plus: 13 | modulo: 21 %}
                     {% assign rotation = rotation_seed | minus: 10 %}
-                    {% assign size_seed = product.id | plus: slot | times: 17 | modulo: 6 %}
+                    {% assign size_seed = hash_seed | plus: 17 | modulo: 6 %}
                     {% assign size_percent = size_seed | times: 7 | plus: 85 %}
                     {% assign doodle_px = block.settings.doodle_size | times: size_percent | divided_by: 100 %}
                     <img
@@ -236,7 +244,47 @@
                       alt=""
                       aria-hidden="true"
                       loading="lazy"
-                      class="ai-product-grid-doodle-{{ ai_gen_id }} ai-product-grid-doodle-slot-{{ slot }}-{{ ai_gen_id }}"
+                      class="ai-product-grid-doodle-{{ ai_gen_id }} ai-product-grid-doodle-slot-left-{{ slot_index }}-{{ ai_gen_id }}"
+                      style="width: {{ doodle_px }}px; transform: rotate({{ rotation }}deg);"
+                    >
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+              {% assign right_start = product.id | plus: 7 | modulo: 3 %}
+              {% for i in (0..2) %}
+                {% if forloop.index0 < right_count %}
+                  {% assign slot_index = right_start | plus: forloop.index0 | modulo: 3 %}
+                  {% assign hash_seed = product.id | plus: slot_index | times: 9 | plus: 137 %}
+
+                  {% assign doodle_pick = hash_seed | modulo: 6 %}
+                  {% case doodle_pick %}
+                    {% when 0 %}
+                      {% assign doodle_img = block.settings.doodle_1 %}
+                    {% when 1 %}
+                      {% assign doodle_img = block.settings.doodle_2 %}
+                    {% when 2 %}
+                      {% assign doodle_img = block.settings.doodle_3 %}
+                    {% when 3 %}
+                      {% assign doodle_img = block.settings.doodle_4 %}
+                    {% when 4 %}
+                      {% assign doodle_img = block.settings.doodle_5 %}
+                    {% when 5 %}
+                      {% assign doodle_img = block.settings.doodle_6 %}
+                  {% endcase %}
+
+                  {% if doodle_img != blank %}
+                    {% assign rotation_seed = hash_seed | plus: 13 | modulo: 21 %}
+                    {% assign rotation = rotation_seed | minus: 10 %}
+                    {% assign size_seed = hash_seed | plus: 17 | modulo: 6 %}
+                    {% assign size_percent = size_seed | times: 7 | plus: 85 %}
+                    {% assign doodle_px = block.settings.doodle_size | times: size_percent | divided_by: 100 %}
+                    <img
+                      src="{{ doodle_img | image_url: width: 200 }}"
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      class="ai-product-grid-doodle-{{ ai_gen_id }} ai-product-grid-doodle-slot-right-{{ slot_index }}-{{ ai_gen_id }}"
                       style="width: {{ doodle_px }}px; transform: rotate({{ rotation }}deg);"
                     >
                   {% endif %}
@@ -495,7 +543,7 @@
       "type": "image_picker",
       "id": "doodle_1",
       "label": "Doodle 1",
-      "info": "Upload up to 6 doodles. Each product randomly shows 3 or 5 of them in different positions around the image, each with its own random rotation and size so they feel hand-placed. Positions never overlap, and the combination varies from product to product."
+      "info": "Upload up to 6 doodles. Each product randomly shows 3 or 4 of them spread across the left and right sides of the image, each with its own random rotation and size so they feel hand-placed. Doodles stay inside each product's own tile, so they never overlap each other or bleed into neighboring products, and the combination varies from product to product."
     },
     {
       "type": "image_picker",
