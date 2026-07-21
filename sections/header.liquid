@@ -1,4 +1,13 @@
 <style>
+  /* ---------- Hero header (homepage, over the image banner) ---------- */
+  .hero-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 20;
+    background: transparent;
+  }
   .header-wrapper {
     display: flex;
     align-items: center;
@@ -20,23 +29,29 @@
   .right-nav {
     justify-content: flex-start;
   }
-  .logo-wrapper {
+  .hero-header .logo-wrapper {
     flex: 0 0 auto;
     padding: 20px {{ section.settings.link-spacing }}px;
     margin: 0 auto;
   }
-  .logo-wrapper img {
+  .hero-header .logo-wrapper img {
     width: {{ section.settings.logo-size }}px;
     max-width: 100%;
   }
   .header-menu .menu-item > a,
-  .right-nav a {
+  .right-nav a,
+  .hero-header .header-logo-text {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 400;
     font-size: {{ section.settings.nav-text-size }}px;
     white-space: nowrap;
     text-decoration: none;
+    color: {{ settings.header-overlay-menu-color }};
+  }
+  .hero-header .header-logo-text {
+    text-transform: none;
+    letter-spacing: normal;
   }
   .submenu {
     display: none;
@@ -71,31 +86,178 @@
   .has-children.active > a:after {
     content: ' -';
   }
-
   @media screen and (min-width: 750px){
     .submenu a {
       color: {{ settings.submenu-color }};
     }
   }
-
   @media screen and (max-width: 749px) {
-    .header-wrapper {
-      column-gap: 8px;
+    .hero-header {
+      display: none;
     }
-    .header-menu,
-    .right-nav {
-      gap: {{ section.settings.link-spacing-mobile }}px;
+  }
+
+  /* ---------- Compact header (hamburger / logo / cart icon) ---------- */
+  .compact-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 30;
+    background: transparent;
+    color: {{ settings.header-overlay-menu-color }};
+  }
+  .site-header.past-banner .compact-header {
+    position: fixed;
+    background: {{ section.settings.compact-bg }};
+    color: {{ section.settings.compact-color }};
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+  .site-header.past-banner.header-hidden .compact-header {
+    transform: translateY(-100%);
+  }
+  @media screen and (min-width: 750px) {
+    .compact-header {
+      display: none;
     }
-    .logo-wrapper {
-      padding: 14px {{ section.settings.link-spacing-mobile }}px;
+    .site-header.past-banner .compact-header {
+      display: block;
     }
-    .logo-wrapper img {
-      width: {{ section.settings.logo-size-mobile }}px;
+  }
+  .compact-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: {{ section.settings.compact-spacing }}px;
+  }
+  .compact-logo-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+    line-height: 0;
+  }
+  .compact-logo-wrapper img {
+    width: {{ section.settings.logo-size-compact }}px;
+    max-width: 100%;
+    display: block;
+  }
+  .compact-logo-wrapper .logo-alt {
+    display: none;
+  }
+  .site-header.past-banner .compact-logo-wrapper .logo-original {
+    display: none;
+  }
+  .site-header.past-banner .compact-logo-wrapper .logo-alt {
+    display: block;
+  }
+  .burger-menu,
+  .cart-icon-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    color: currentColor;
+  }
+  .burger-menu svg,
+  .cart-icon-link svg {
+    width: {{ section.settings.compact-icon-size }}px;
+    height: {{ section.settings.compact-icon-size }}px;
+    stroke: currentColor;
+  }
+  .burger-menu .cross {
+    display: none;
+  }
+  .burger-menu.active .burger {
+    display: none;
+  }
+  .burger-menu.active .cross {
+    display: block;
+  }
+  .cart-count-bubble {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 3px;
+    border-radius: 50%;
+    background: {{ section.settings.compact-color }};
+    font-size: 10px;
+    line-height: 16px;
+    text-align: center;
+  }
+  .cart-count-bubble span {
+    color: {{ section.settings.compact-bg }};
+  }
+  @media screen and (max-width: 749px) {
+    .compact-wrapper {
+      padding: {{ section.settings.compact-spacing-mobile }}px;
     }
-    .header-menu .menu-item > a,
-    .right-nav a {
-      font-size: {{ section.settings.nav-text-size-mobile }}px;
+    .compact-logo-wrapper img {
+      width: {{ section.settings.logo-size-compact-mobile }}px;
     }
+    .burger-menu svg,
+    .cart-icon-link svg {
+      width: {{ section.settings.compact-icon-size-mobile }}px;
+      height: {{ section.settings.compact-icon-size-mobile }}px;
+    }
+  }
+
+  /* ---------- Fullscreen nav flyout (opened by hamburger) ---------- */
+  .mobile-nav-flyout {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: {{ section.settings.compact-bg }};
+    color: {{ section.settings.compact-color }};
+    z-index: 40;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+  }
+  .mobile-nav-flyout.active {
+    display: flex;
+  }
+  .mobile-nav-flyout .menu-item {
+    text-transform: uppercase;
+    font-size: 25px;
+    text-align: center;
+    margin-bottom: 1.7rem;
+  }
+  .mobile-nav-flyout .menu-item > a {
+    text-decoration: none;
+    color: currentColor;
+  }
+  .mobile-nav-flyout .submenu {
+    position: static;
+    transform: none;
+    background: none;
+    box-shadow: none;
+  }
+  .mobile-nav-flyout .submenu a {
+    font-size: 18px;
+    color: currentColor;
+  }
+  .mobile-nav-flyout .utility-links {
+    margin-top: 1rem;
+    display: flex;
+    gap: 20px;
+  }
+  .mobile-nav-flyout .utility-links a {
+    text-transform: uppercase;
+    font-size: 16px;
+    text-decoration: none;
+    color: currentColor;
   }
 
   .announcement-container{
@@ -128,6 +290,7 @@
     }
   }
 </style>
+
 {% if section.settings.enable_announcement %}
 <a class="announcement-link" href="{{ section.settings.announcement_link }}">
   <div class="announcement-container">
@@ -135,10 +298,105 @@
   </div>
 </a>
 {% endif %}
-<div class="page-width">
-<div class="header-wrapper">
 
-  <div class="header-menu">
+{% assign show_hero = false %}
+{% if settings.enable-header-overlay and template == 'index' %}
+  {% assign show_hero = true %}
+{% endif %}
+
+<header class="site-header{% unless show_hero %} past-banner{% endunless %}" data-has-hero="{{ show_hero }}">
+
+  {% if show_hero %}
+  <div class="hero-header">
+    <div class="page-width">
+      <div class="header-wrapper">
+
+        <div class="header-menu">
+          {% if section.settings.menu %}
+            {% for link in linklists[section.settings.menu].links %}
+            <div class="menu-item{% if link.links.size > 0 %} has-children{% endif %}">
+              <a href="{{ link.url }}" class="menu-link">{{ link.title }}</a>
+              {% if link.links.size > 0 %}
+                <div class="submenu">
+                  {% for childlink in link.links %}
+                    <a href="{{ childlink.url }}">{{ childlink.title }}</a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <div class="logo-wrapper">
+          <a href="{{ routes.root_url }}" class="header__heading-link">
+            {%- if settings.header-overlay-logo != blank -%}
+              <img src="{{ settings.header-overlay-logo | img_url: 'master' }}" alt="{{ shop.name }}" loading="eager">
+            {%- elsif section.settings.logo != blank -%}
+              <img src="{{ section.settings.logo | img_url: 'master' }}" alt="{{ shop.name }}" loading="eager">
+            {%- else -%}
+              <span class="header-logo-text">{{ shop.name }}</span>
+            {%- endif -%}
+          </a>
+        </div>
+
+        <div class="right-nav">
+          {% if shop.customer_accounts_enabled %}
+            <a href="/account">Account</a>
+          {% endif %}
+          {% if section.settings.track_link != blank %}
+            <a href="{{ section.settings.track_link }}">Track</a>
+          {% endif %}
+          <a href="/cart">Cart (<span id="CartCount">{{ cart.item_count }}</span>)</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="compact-header">
+    <div class="page-width">
+      <div class="compact-wrapper">
+
+        <button class="burger-menu" aria-label="Menu" aria-expanded="false">
+          <svg class="burger" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 51" fill="none">
+            <line x1="8" y1="20" x2="48" y2="20" stroke-width="2"/>
+            <line x1="8" y1="28.6133" x2="48" y2="28.6133" stroke-width="2"/>
+          </svg>
+          <svg class="cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 41" fill="none">
+            <path d="M13 30.4902L31.4902 12" stroke-width="1.65"/>
+            <path d="M13 12L31.4902 30.4902" stroke-width="1.65"/>
+          </svg>
+        </button>
+
+        <a href="{{ routes.root_url }}" class="compact-logo-wrapper" aria-label="{{ shop.name }}">
+          {%- if section.settings.logo != blank -%}
+            <img class="logo-original" src="{{ section.settings.logo | img_url: 'master' }}" alt="{{ shop.name }}" loading="eager">
+          {%- else -%}
+            <span class="logo-original header-logo-text">{{ shop.name }}</span>
+          {%- endif -%}
+          {%- if section.settings.logo-scrolled != blank -%}
+            <img class="logo-alt" src="{{ section.settings.logo-scrolled | img_url: 'master' }}" alt="{{ shop.name }}" loading="eager">
+          {%- endif -%}
+        </a>
+
+        <a class="cart-icon-link" href="/cart" aria-label="Cart">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+            <path d="M6 6h15l-1.5 9h-12L6 6zM6 6L5 3H2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9.5" cy="20" r="1.5"/>
+            <circle cx="17.5" cy="20" r="1.5"/>
+          </svg>
+          {% if cart.item_count > 0 %}
+            <span class="cart-count-bubble"><span>{{ cart.item_count }}</span></span>
+          {% endif %}
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-nav-flyout">
     {% if section.settings.menu %}
       {% for link in linklists[section.settings.menu].links %}
       <div class="menu-item{% if link.links.size > 0 %} has-children{% endif %}">
@@ -160,48 +418,80 @@
       </div>
       {% endfor %}
     {% endif %}
-  </div>
-
-  <div class="logo-wrapper">
-    <a href="{{ routes.root_url }}" class="header__heading-link">
-      {% if settings.enable-header-overlay and template == 'index' %}
-        {%- if settings.header-overlay-logo != blank -%}
-          <img class="header-logo" src="{{ settings.header-overlay-logo | img_url: 'master' }}" alt="{{ shop.name }}" loading="eager">
-        {%- else -%}
-          <span class="header-logo-text">{{ shop.name }}</span>
-        {%- endif -%}
-      {% else %}
-        {%- if section.settings.logo != blank -%}
-          <img class="header-logo" src="{{ section.settings.logo | img_url: 'master' }}" alt="{{ shop.name }}" loading="eager">
-        {%- else -%}
-          <span class="header-logo-text">{{ shop.name }}</span>
-        {%- endif -%}
+    <div class="utility-links">
+      {% if shop.customer_accounts_enabled %}
+        <a href="/account">Account</a>
       {% endif %}
-    </a>
+      {% if section.settings.track_link != blank %}
+        <a href="{{ section.settings.track_link }}">Track</a>
+      {% endif %}
+    </div>
   </div>
 
-  <div class="right-nav">
-    {% if shop.customer_accounts_enabled %}
-      <a href="/account">Account</a>
-    {% endif %}
-    {% if section.settings.track_link != blank %}
-      <a href="{{ section.settings.track_link }}">Track</a>
-    {% endif %}
-    <a href="/cart">Cart (<span id="CartCount">{{ cart.item_count }}</span>)</a>
-  </div>
+</header>
 
-</div>
-</div>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  var menuItems = document.querySelectorAll('.header-menu > .menu-item');
-  menuItems.forEach(function(item) {
+document.addEventListener('DOMContentLoaded', function () {
+  var header = document.querySelector('.site-header');
+  var banner = document.querySelector('.image-banner-container');
+  var lastScrollY = window.scrollY;
+  var revealOffset = 80;
+
+  function updatePastBanner() {
+    if (!banner) {
+      header.classList.add('past-banner');
+      return;
+    }
+    var bannerBottom = banner.getBoundingClientRect().bottom + window.scrollY;
+    if (window.scrollY >= bannerBottom - 1) {
+      header.classList.add('past-banner');
+    } else {
+      header.classList.remove('past-banner');
+      header.classList.remove('header-hidden');
+    }
+  }
+
+  function updateHideReveal() {
+    if (!header.classList.contains('past-banner')) return;
+    var currentY = window.scrollY;
+    if (currentY <= revealOffset) {
+      header.classList.remove('header-hidden');
+    } else if (currentY > lastScrollY) {
+      header.classList.add('header-hidden');
+    } else if (currentY < lastScrollY) {
+      header.classList.remove('header-hidden');
+    }
+    lastScrollY = currentY;
+  }
+
+  function onScroll() {
+    updatePastBanner();
+    updateHideReveal();
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  var burgerMenu = document.querySelector('.burger-menu');
+  var mobileNav = document.querySelector('.mobile-nav-flyout');
+  var body = document.querySelector('body');
+
+  burgerMenu.addEventListener('click', function () {
+    var isOpen = mobileNav.classList.contains('active');
+    mobileNav.classList.toggle('active');
+    burgerMenu.classList.toggle('active');
+    burgerMenu.setAttribute('aria-expanded', String(!isOpen));
+    body.style.overflow = isOpen ? 'inherit' : 'hidden';
+  });
+
+  var menuItems = document.querySelectorAll('.mobile-nav-flyout > .menu-item');
+  menuItems.forEach(function (item) {
     var link = item.querySelector('.menu-link');
-    link.addEventListener('click', function(event) {
-      if(item.classList.contains('has-children')){
+    link.addEventListener('click', function (event) {
+      if (item.classList.contains('has-children')) {
         event.preventDefault();
-        var active = document.querySelector('.menu-item.active');
-        if(active && active !== item){
+        var active = document.querySelector('.mobile-nav-flyout .menu-item.active');
+        if (active && active !== item) {
           active.classList.remove('active');
           active.querySelector('.submenu').style.display = 'none';
         }
@@ -212,14 +502,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  document.addEventListener('click', function(event) {
+  var heroMenuItems = document.querySelectorAll('.hero-header .header-menu > .menu-item.has-children');
+  heroMenuItems.forEach(function (item) {
+    var link = item.querySelector('.menu-link');
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      var active = document.querySelector('.hero-header .menu-item.active');
+      if (active && active !== item) {
+        active.classList.remove('active');
+        active.querySelector('.submenu').style.display = 'none';
+      }
+      var submenu = item.querySelector('.submenu');
+      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      item.classList.toggle('active');
+    });
+  });
+
+  document.addEventListener('click', function (event) {
     if (!event.target.closest('.menu-item')) {
-      var submenus = document.querySelectorAll('.submenu');
-      submenus.forEach(function(submenu) {
+      document.querySelectorAll('.hero-header .submenu').forEach(function (submenu) {
         submenu.style.display = 'none';
       });
-      var activeItems = document.querySelectorAll('.menu-item.active');
-      activeItems.forEach(function(item) {
+      document.querySelectorAll('.hero-header .menu-item.active').forEach(function (item) {
         item.classList.remove('active');
       });
     }
@@ -233,8 +537,8 @@ document.addEventListener('DOMContentLoaded', function() {
   "settings": [
     {
       "type": "header",
-      "content": "Logo",
-      "info": "To enable/disable header overlay (for image banner) go to Theme Settings => Header overlay"
+      "content": "Hero header (homepage banner)",
+      "info": "Shown at the top of the homepage while it overlays the image banner. Requires Theme Settings => Header overlay to be enabled. Hidden on mobile."
     },
     {
       "type": "image_picker",
@@ -253,50 +557,13 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     {
       "type": "range",
-      "id": "logo-size-mobile",
-      "min": 50,
-      "max": 300,
-      "step": 5,
-      "default": 100,
-      "unit": "px",
-      "label": "Logo size (mobile)"
-    },
-    {
-      "type": "header",
-      "content": "Navigation links"
-    },
-    {
-      "type": "link_list",
-      "id": "menu",
-      "label": "Header menu",
-      "info": "Links shown to the left of the logo, e.g. Shop, About, Roots"
-    },
-    {
-      "type": "url",
-      "id": "track_link",
-      "label": "Track order link",
-      "info": "Shown to the right of the logo, after Account and before Cart. Leave blank to hide."
-    },
-    {
-      "type": "range",
       "id": "nav-text-size",
       "min": 10,
       "max": 30,
       "step": 1,
       "default": 16,
       "unit": "px",
-      "label": "Link text size (desktop)",
-      "info": "Applies uniformly to all links on both sides of the logo"
-    },
-    {
-      "type": "range",
-      "id": "nav-text-size-mobile",
-      "min": 8,
-      "max": 24,
-      "step": 1,
-      "default": 12,
-      "unit": "px",
-      "label": "Link text size (mobile)",
+      "label": "Link text size",
       "info": "Applies uniformly to all links on both sides of the logo"
     },
     {
@@ -307,17 +574,106 @@ document.addEventListener('DOMContentLoaded', function() {
       "step": 2,
       "default": 24,
       "unit": "px",
-      "label": "Space between links (desktop)"
+      "label": "Space between links"
+    },
+    {
+      "type": "header",
+      "content": "Navigation links"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Header menu",
+      "info": "e.g. Shop, About, Roots. Shown inline in the hero header, and inside the hamburger menu everywhere else."
+    },
+    {
+      "type": "url",
+      "id": "track_link",
+      "label": "Track order link",
+      "info": "Shown after Account in the hero header and inside the hamburger menu. Leave blank to hide."
+    },
+    {
+      "type": "header",
+      "content": "Compact header (scrolled / all other pages)",
+      "info": "Hamburger, centered logo, and cart icon. Used on mobile at all times, and on desktop once you scroll past the homepage banner or on any page without a banner."
+    },
+    {
+      "type": "image_picker",
+      "id": "logo-scrolled",
+      "label": "Logo (scrolled / compact state)",
+      "info": "Optional. Falls back to the main logo above if left blank."
     },
     {
       "type": "range",
-      "id": "link-spacing-mobile",
-      "min": 0,
-      "max": 40,
-      "step": 2,
-      "default": 10,
+      "id": "logo-size-compact",
+      "min": 20,
+      "max": 200,
+      "step": 5,
+      "default": 50,
       "unit": "px",
-      "label": "Space between links (mobile)"
+      "label": "Logo size (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "logo-size-compact-mobile",
+      "min": 20,
+      "max": 160,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Logo size (mobile)"
+    },
+    {
+      "type": "color",
+      "id": "compact-color",
+      "label": "Icon & text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "compact-bg",
+      "label": "Background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "compact-icon-size",
+      "min": 14,
+      "max": 40,
+      "step": 1,
+      "default": 24,
+      "unit": "px",
+      "label": "Icon size (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "compact-icon-size-mobile",
+      "min": 14,
+      "max": 34,
+      "step": 1,
+      "default": 22,
+      "unit": "px",
+      "label": "Icon size (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "compact-spacing",
+      "min": 10,
+      "max": 100,
+      "step": 2,
+      "default": 40,
+      "unit": "px",
+      "label": "Spacing around icons (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "compact-spacing-mobile",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "default": 20,
+      "unit": "px",
+      "label": "Spacing around icons (mobile)"
     },
     {
       "type": "header",

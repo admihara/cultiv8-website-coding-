@@ -61,24 +61,6 @@
     font-size: 44px;
     {% endif %}
   }
-  {% if settings.enable-header-overlay and template == 'index' %}
-  .header-wrapper {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    padding: 0px 25px;
-    z-index: 10;
-}
-  .right-nav, .right-nav > *, .header-logo-text{
-      color: {{ settings.header-overlay-menu-color }};
-    }
-  @media screen and (min-width: 749px){
-    .menu-item a{
-      color: {{ settings.header-overlay-menu-color }};
-    }
-  }
-  {% endif %}
-
   @media screen and (max-width: 749px){
     .image-banner-container {
       {% if section.settings.image-banner-mobile %}
