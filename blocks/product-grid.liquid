@@ -53,9 +53,50 @@
   }
 
   .ai-product-grid-item-{{ ai_gen_id }} {
+    position: relative;
     display: flex;
     flex-direction: column;
     text-align: {{ block.settings.text_alignment }};
+  }
+
+  .ai-product-grid-doodle-{{ ai_gen_id }} {
+    position: absolute;
+    z-index: 3;
+    width: {{ block.settings.doodle_size }}px;
+    height: auto;
+    opacity: {{ block.settings.doodle_opacity | divided_by: 100.0 }};
+    pointer-events: none;
+    user-select: none;
+  }
+  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+1) .ai-product-grid-doodle-{{ ai_gen_id }} {
+    top: -10%;
+    left: -10%;
+    transform: rotate(-12deg);
+  }
+  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+2) .ai-product-grid-doodle-{{ ai_gen_id }} {
+    top: -8%;
+    right: -12%;
+    transform: rotate(9deg);
+  }
+  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+3) .ai-product-grid-doodle-{{ ai_gen_id }} {
+    bottom: 18%;
+    left: -10%;
+    transform: rotate(15deg);
+  }
+  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+4) .ai-product-grid-doodle-{{ ai_gen_id }} {
+    bottom: 20%;
+    right: -12%;
+    transform: rotate(-18deg);
+  }
+  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+5) .ai-product-grid-doodle-{{ ai_gen_id }} {
+    top: -12%;
+    left: 42%;
+    transform: rotate(6deg);
+  }
+  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n) .ai-product-grid-doodle-{{ ai_gen_id }} {
+    bottom: 22%;
+    right: 38%;
+    transform: rotate(-6deg);
   }
 
   .ai-product-grid-image-wrapper-{{ ai_gen_id }} {
@@ -150,7 +191,28 @@
       {% if block.settings.collection != blank %}
         {% assign products_to_show = block.settings.products_limit %}
         {% for product in block.settings.collection.products limit: products_to_show %}
+          {% assign doodle_img = blank %}
+          {% if block.settings.enable_doodles %}
+            {% assign doodle_slot = forloop.index0 | modulo: 3 %}
+            {% case doodle_slot %}
+              {% when 0 %}
+                {% assign doodle_img = block.settings.doodle_1 %}
+              {% when 1 %}
+                {% assign doodle_img = block.settings.doodle_2 | default: block.settings.doodle_1 %}
+              {% when 2 %}
+                {% assign doodle_img = block.settings.doodle_3 | default: block.settings.doodle_1 %}
+            {% endcase %}
+          {% endif %}
           <div class="ai-product-grid-item-{{ ai_gen_id }}">
+            {% if doodle_img != blank %}
+              <img
+                src="{{ doodle_img | image_url: width: 200 }}"
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                class="ai-product-grid-doodle-{{ ai_gen_id }}"
+              >
+            {% endif %}
             <div class="ai-product-grid-image-wrapper-{{ ai_gen_id }}">
               <a href="{{ product.url }}">
                 {% if product.featured_image %}
@@ -388,6 +450,53 @@
       "id": "product_price_color",
       "label": "Price color",
       "default": "#969696"
+    },
+    {
+      "type": "header",
+      "content": "Doodle overlays"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_doodles",
+      "label": "Enable doodle overlays",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "doodle_1",
+      "label": "Doodle 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "doodle_2",
+      "label": "Doodle 2",
+      "info": "Optional. Alternates with Doodle 1 across products for variety. Leave blank to reuse Doodle 1."
+    },
+    {
+      "type": "image_picker",
+      "id": "doodle_3",
+      "label": "Doodle 3",
+      "info": "Optional. Leave blank to reuse Doodle 1."
+    },
+    {
+      "type": "range",
+      "id": "doodle_size",
+      "label": "Doodle size",
+      "min": 20,
+      "max": 150,
+      "step": 5,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "doodle_opacity",
+      "label": "Doodle opacity",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "unit": "%"
     }
   ],
   "presets": [
