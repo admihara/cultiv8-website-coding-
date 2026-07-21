@@ -67,24 +67,42 @@
     pointer-events: none;
     user-select: none;
   }
-  /* Four fixed, non-overlapping corners. Each product randomly uses 1-3 of
-     them (see the loop below), so which corners appear varies per product
+  /* Eight fixed, non-overlapping positions ringing the image. Each product
+     randomly uses 3 or 5 of them (see the loop below) starting from a
+     different point in the ring, so both which positions appear and which
+     doodle/angle/size lands in each one vary from product to product,
      while doodles on the same product never collide. */
   .ai-product-grid-doodle-slot-0-{{ ai_gen_id }} {
     top: -10%;
     left: -10%;
   }
   .ai-product-grid-doodle-slot-1-{{ ai_gen_id }} {
+    top: -12%;
+    left: 42%;
+  }
+  .ai-product-grid-doodle-slot-2-{{ ai_gen_id }} {
     top: -8%;
     right: -12%;
   }
-  .ai-product-grid-doodle-slot-2-{{ ai_gen_id }} {
+  .ai-product-grid-doodle-slot-3-{{ ai_gen_id }} {
+    top: 35%;
+    right: -14%;
+  }
+  .ai-product-grid-doodle-slot-4-{{ ai_gen_id }} {
+    bottom: 20%;
+    right: -12%;
+  }
+  .ai-product-grid-doodle-slot-5-{{ ai_gen_id }} {
+    bottom: 22%;
+    left: 42%;
+  }
+  .ai-product-grid-doodle-slot-6-{{ ai_gen_id }} {
     bottom: 18%;
     left: -10%;
   }
-  .ai-product-grid-doodle-slot-3-{{ ai_gen_id }} {
-    bottom: 20%;
-    right: -12%;
+  .ai-product-grid-doodle-slot-7-{{ ai_gen_id }} {
+    top: 35%;
+    left: -14%;
   }
 
   .ai-product-grid-image-wrapper-{{ ai_gen_id }} {
@@ -181,13 +199,17 @@
         {% for product in block.settings.collection.products limit: products_to_show %}
           <div class="ai-product-grid-item-{{ ai_gen_id }}">
             {% if block.settings.enable_doodles %}
-              {% assign doodle_count = product.id | modulo: 3 | plus: 1 %}
-              {% assign slot_start = product.id | modulo: 4 %}
-              {% for slot_offset in (0..3) %}
+              {% assign doodle_count = 3 %}
+              {% assign count_parity = product.id | modulo: 2 %}
+              {% if count_parity == 1 %}
+                {% assign doodle_count = 5 %}
+              {% endif %}
+              {% assign slot_start = product.id | modulo: 8 %}
+              {% for slot_offset in (0..7) %}
                 {% if forloop.index0 < doodle_count %}
-                  {% assign slot = slot_start | plus: forloop.index0 | modulo: 4 %}
+                  {% assign slot = slot_start | plus: forloop.index0 | modulo: 8 %}
 
-                  {% assign doodle_pick = product.id | plus: slot | times: 7 | modulo: 6 %}
+                  {% assign doodle_pick = product.id | plus: slot | times: 11 | modulo: 6 %}
                   {% case doodle_pick %}
                     {% when 0 %}
                       {% assign doodle_img = block.settings.doodle_1 %}
@@ -473,7 +495,7 @@
       "type": "image_picker",
       "id": "doodle_1",
       "label": "Doodle 1",
-      "info": "Upload up to 6 doodles. Each product randomly shows 1-3 of them in different corners, with a bit of random rotation and sizing so they feel hand-placed. Never overlap on the same product."
+      "info": "Upload up to 6 doodles. Each product randomly shows 3 or 5 of them in different positions around the image, each with its own random rotation and size so they feel hand-placed. Positions never overlap, and the combination varies from product to product."
     },
     {
       "type": "image_picker",
