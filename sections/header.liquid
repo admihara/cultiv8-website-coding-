@@ -462,6 +462,8 @@
 document.addEventListener('DOMContentLoaded', function () {
   var header = document.querySelector('.site-header');
   var banner = document.querySelector('.image-banner-container');
+  var bannerText = document.querySelector('.banner-content');
+  var heroHeader = document.querySelector('.hero-header');
   var compactHeader = document.querySelector('.compact-header');
   var isHomepage = header.dataset.isHomepage === 'true';
   var lastScrollY = window.scrollY;
@@ -497,13 +499,21 @@ document.addEventListener('DOMContentLoaded', function () {
   window.addEventListener('resize', updateBodyOffset);
   window.addEventListener('load', updateBodyOffset);
 
+  function activeHeaderHeight() {
+    if (window.innerWidth >= 750 && heroHeader) {
+      return heroHeader.offsetHeight;
+    }
+    return compactHeader.offsetHeight;
+  }
+
   function updatePastBanner() {
-    if (!banner) {
+    var triggerEl = bannerText || banner;
+    if (!triggerEl) {
       header.classList.add('past-banner');
       return;
     }
-    var bannerBottom = banner.getBoundingClientRect().bottom + window.scrollY;
-    if (window.scrollY >= bannerBottom - 1) {
+    var triggerTop = triggerEl.getBoundingClientRect().top;
+    if (triggerTop <= activeHeaderHeight()) {
       header.classList.add('past-banner');
     } else {
       header.classList.remove('past-banner');
