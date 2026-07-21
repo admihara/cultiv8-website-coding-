@@ -1,12 +1,18 @@
 <style>
   /* ---------- Hero header (homepage, over the image banner) ---------- */
   .hero-header {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 20;
     background: transparent;
+    opacity: 1;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .site-header.past-banner .hero-header {
+    opacity: 0;
+    pointer-events: none;
   }
   .header-wrapper {
     display: flex;
@@ -99,29 +105,31 @@
 
   /* ---------- Compact header (hamburger / logo / cart icon) ---------- */
   .compact-header {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 30;
     background: transparent;
     color: {{ settings.header-overlay-menu-color }};
+    opacity: 1;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease, color 0.4s ease;
   }
   .site-header.past-banner .compact-header {
-    position: fixed;
     background: {{ section.settings.compact-bg }};
     color: {{ section.settings.compact-color }};
-    transition: transform 0.3s ease, background-color 0.3s ease;
   }
   .site-header.past-banner.header-hidden .compact-header {
     transform: translateY(-100%);
   }
   @media screen and (min-width: 750px) {
     .compact-header {
-      display: none;
+      opacity: 0;
+      pointer-events: none;
     }
     .site-header.past-banner .compact-header {
-      display: block;
+      opacity: 1;
+      pointer-events: auto;
     }
   }
   .compact-wrapper {
@@ -144,14 +152,24 @@
     max-width: 100%;
     display: block;
   }
+  .compact-logo-wrapper img,
+  .compact-logo-wrapper .header-logo-text {
+    transition: opacity 0.4s ease;
+  }
+  .compact-logo-wrapper .logo-original {
+    opacity: 1;
+  }
   .compact-logo-wrapper .logo-alt {
-    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
   }
   .site-header.past-banner .compact-logo-wrapper .logo-original {
-    display: none;
+    opacity: 0;
   }
   .site-header.past-banner .compact-logo-wrapper .logo-alt {
-    display: block;
+    opacity: 1;
   }
   .burger-menu,
   .cart-icon-link {
@@ -448,6 +466,24 @@ document.addEventListener('DOMContentLoaded', function () {
   var isHomepage = header.dataset.isHomepage === 'true';
   var lastScrollY = window.scrollY;
   var revealOffset = 80;
+  var hideDelay = 350;
+  var hideTimer = null;
+
+  function scheduleHide() {
+    if (hideTimer || header.classList.contains('header-hidden')) return;
+    hideTimer = setTimeout(function () {
+      header.classList.add('header-hidden');
+      hideTimer = null;
+    }, hideDelay);
+  }
+
+  function cancelHide() {
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+      hideTimer = null;
+    }
+    header.classList.remove('header-hidden');
+  }
 
   function updateBodyOffset() {
     if (isHomepage) {
@@ -476,14 +512,18 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateHideReveal() {
-    if (!header.classList.contains('past-banner')) return;
+    if (!header.classList.contains('past-banner')) {
+      cancelHide();
+      lastScrollY = window.scrollY;
+      return;
+    }
     var currentY = window.scrollY;
     if (currentY <= revealOffset) {
-      header.classList.remove('header-hidden');
+      cancelHide();
     } else if (currentY > lastScrollY) {
-      header.classList.add('header-hidden');
+      scheduleHide();
     } else if (currentY < lastScrollY) {
-      header.classList.remove('header-hidden');
+      cancelHide();
     }
     lastScrollY = currentY;
   }
