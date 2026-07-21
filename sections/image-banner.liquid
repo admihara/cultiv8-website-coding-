@@ -15,6 +15,13 @@
     height: {{ section.settings.banner-height }}vh;
     display: flex;
     align-items: flex-end;
+    {% if section.settings.content-alignment == 'left' %}
+    justify-content: flex-start;
+    {% elsif section.settings.content-alignment == 'right' %}
+    justify-content: flex-end;
+    {% else %}
+    justify-content: center;
+    {% endif %}
     background: url('{{ section.settings.image-banner | img_url: 'master' }}');
     background-size: cover;
     background-position: center;
@@ -37,6 +44,7 @@
     margin: 50px 25px;
     position: relative;
     z-index: 3;
+    text-align: {{ section.settings.content-alignment }};
   }
   .banner-content_h2{
     padding-bottom: 15px;
@@ -51,10 +59,6 @@
     font-size: 44px;
     {% endif %}
   }
-  .banner-content_button{
-    text-align: {{ section.settings.button-alignment }};
-  }
-
   {% if settings.enable-header-overlay and template == 'index' %}
   .header-wrapper {
     position: absolute;
@@ -153,6 +157,31 @@
       },
       {
         "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "select",
+        "id": "content-alignment",
+        "label": "Content alignment",
+        "info": "Positions the title and button together within the banner",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ],
+        "default": "center"
+      },
+      {
+        "type": "header",
         "content": "Title"
       },
       {
@@ -207,26 +236,6 @@
         "default": "SHOP ALL"
       },
       {
-        "type": "select",
-        "id": "button-alignment",
-        "label": "Button alignment",
-        "options": [
-          {
-            "label": "Left",
-            "value": "left"
-          },
-          {
-            "label": "Center",
-            "value": "center"
-          },
-          {
-            "label": "Right",
-            "value": "right"
-          }
-        ],
-        "default": "center"
-      },
-      {
         "type": "color",
         "id": "button-color",
         "label": "Button text color",
@@ -266,7 +275,7 @@
         "step": 1,
         "label": "Button horizontal padding",
         "unit": "px",
-        "default": 13
+        "default": 32
       },
       {
         "type": "header",
