@@ -68,35 +68,22 @@
     pointer-events: none;
     user-select: none;
   }
-  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+1) .ai-product-grid-doodle-{{ ai_gen_id }} {
+  /* Each doodle gets its own fixed corner so all three can appear on the
+     same product at once without overlapping one another */
+  .ai-product-grid-doodle-1-{{ ai_gen_id }} {
     top: -10%;
     left: -10%;
     transform: rotate(-12deg);
   }
-  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+2) .ai-product-grid-doodle-{{ ai_gen_id }} {
+  .ai-product-grid-doodle-2-{{ ai_gen_id }} {
     top: -8%;
     right: -12%;
     transform: rotate(9deg);
   }
-  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+3) .ai-product-grid-doodle-{{ ai_gen_id }} {
+  .ai-product-grid-doodle-3-{{ ai_gen_id }} {
     bottom: 18%;
     left: -10%;
     transform: rotate(15deg);
-  }
-  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+4) .ai-product-grid-doodle-{{ ai_gen_id }} {
-    bottom: 20%;
-    right: -12%;
-    transform: rotate(-18deg);
-  }
-  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n+5) .ai-product-grid-doodle-{{ ai_gen_id }} {
-    top: -12%;
-    left: 42%;
-    transform: rotate(6deg);
-  }
-  .ai-product-grid-item-{{ ai_gen_id }}:nth-child(6n) .ai-product-grid-doodle-{{ ai_gen_id }} {
-    bottom: 22%;
-    right: 38%;
-    transform: rotate(-6deg);
   }
 
   .ai-product-grid-image-wrapper-{{ ai_gen_id }} {
@@ -191,27 +178,35 @@
       {% if block.settings.collection != blank %}
         {% assign products_to_show = block.settings.products_limit %}
         {% for product in block.settings.collection.products limit: products_to_show %}
-          {% assign doodle_img = blank %}
-          {% if block.settings.enable_doodles %}
-            {% assign doodle_slot = forloop.index0 | modulo: 3 %}
-            {% case doodle_slot %}
-              {% when 0 %}
-                {% assign doodle_img = block.settings.doodle_1 %}
-              {% when 1 %}
-                {% assign doodle_img = block.settings.doodle_2 | default: block.settings.doodle_1 %}
-              {% when 2 %}
-                {% assign doodle_img = block.settings.doodle_3 | default: block.settings.doodle_1 %}
-            {% endcase %}
-          {% endif %}
           <div class="ai-product-grid-item-{{ ai_gen_id }}">
-            {% if doodle_img != blank %}
-              <img
-                src="{{ doodle_img | image_url: width: 200 }}"
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                class="ai-product-grid-doodle-{{ ai_gen_id }}"
-              >
+            {% if block.settings.enable_doodles %}
+              {% if block.settings.doodle_1 != blank %}
+                <img
+                  src="{{ block.settings.doodle_1 | image_url: width: 200 }}"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  class="ai-product-grid-doodle-{{ ai_gen_id }} ai-product-grid-doodle-1-{{ ai_gen_id }}"
+                >
+              {% endif %}
+              {% if block.settings.doodle_2 != blank %}
+                <img
+                  src="{{ block.settings.doodle_2 | image_url: width: 200 }}"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  class="ai-product-grid-doodle-{{ ai_gen_id }} ai-product-grid-doodle-2-{{ ai_gen_id }}"
+                >
+              {% endif %}
+              {% if block.settings.doodle_3 != blank %}
+                <img
+                  src="{{ block.settings.doodle_3 | image_url: width: 200 }}"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  class="ai-product-grid-doodle-{{ ai_gen_id }} ai-product-grid-doodle-3-{{ ai_gen_id }}"
+                >
+              {% endif %}
             {% endif %}
             <div class="ai-product-grid-image-wrapper-{{ ai_gen_id }}">
               <a href="{{ product.url }}">
@@ -464,19 +459,20 @@
     {
       "type": "image_picker",
       "id": "doodle_1",
-      "label": "Doodle 1"
+      "label": "Doodle 1",
+      "info": "Placed in the top-left corner of every product."
     },
     {
       "type": "image_picker",
       "id": "doodle_2",
       "label": "Doodle 2",
-      "info": "Optional. Alternates with Doodle 1 across products for variety. Leave blank to reuse Doodle 1."
+      "info": "Optional. Placed in the top-right corner, alongside Doodle 1, without overlapping it."
     },
     {
       "type": "image_picker",
       "id": "doodle_3",
       "label": "Doodle 3",
-      "info": "Optional. Leave blank to reuse Doodle 1."
+      "info": "Optional. Placed in the bottom-left corner, alongside Doodles 1 and 2."
     },
     {
       "type": "range",
